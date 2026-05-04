@@ -1,0 +1,52 @@
+-- The Cusial 1: Core Movement Script
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Configuration
+local SPEED = 30 -- Constant forward speed
+local JUMP_POWER = 50
+local isJumping = false
+
+-- Function to handle the jump logic
+local function handleJump()
+    -- Check if the player is touching the ground
+    local ray = Ray.new(humanoidRootPart.Position, Vector3.new(0, -3.5, 0))
+    local hit = workspace:FindPartOnRay(ray, character)
+    
+    if hit then
+        humanoidRootPart.Velocity = Vector3.new(humanoidRootPart.Velocity.X, JUMP_POWER, humanoidRootPart.Velocity.Z)
+    end
+end
+
+-- Main Game Loop
+RunService.RenderStepped:Connect(function()
+    -- Keep the player moving forward constantly
+    humanoidRootPart.Velocity = Vector3.new(SPEED, humanoidRootPart.Velocity.Y, 0)
+    
+    -- Keep the player upright (X and Z rotation locked)
+    humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * CFrame.Angles(0, math.rad(-90), 0)
+    
+    -- Continuous jump if button is held
+    if isJumping then
+        handleJump()
+    end
+end)
+
+-- Input Handling
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.KeyCode == Enum.KeyCode.Space then
+        isJumping = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.KeyCode == Enum.KeyCode.Space then
+        isJumping = false
+    end
+end)
